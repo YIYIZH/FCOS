@@ -17,7 +17,7 @@ class DatasetCatalog(object):
         },
         "coco_2017_test_dev": {
             "img_dir": "/home/yiyifrisky/data/COCO2017/test2017",
-            "ann_file": "coco/annotations/image_info_test-dev2017.json"
+            "ann_file": "/home/yiyifrisky/data/COCO2017/annotations/image_info_test-dev2017.json"
         },
         "coco_2014_train": {
             "img_dir": "coco/train2014",
