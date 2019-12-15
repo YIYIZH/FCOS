@@ -58,14 +58,17 @@ class FPN(nn.Module):
                 continue
             # inner_top_down = F.interpolate(last_inner, scale_factor=2, mode="nearest")
             inner_lateral = getattr(self, inner_block)(feature)
-            inner_top_down = F.interpolate(
+            inner_top_down = F.interpolate( # interpolate is a up/down sampling function
                 last_inner, size=(int(inner_lateral.shape[-2]), int(inner_lateral.shape[-1])),
                 mode='nearest'
             )
             last_inner = inner_lateral + inner_top_down
             results.insert(0, getattr(self, layer_block)(last_inner))
 
-        if isinstance(self.top_blocks, LastLevelP6P7):
+        if isinstance(self.top_blocks, NewLastLevelP6P7):
+            last_results = self.top_blocks(x[-1], results[-1], results[-2], results[-3])
+            results.extend(last_results)
+        elif isinstance(self.top_blocks, LastLevelP6P7):
             last_results = self.top_blocks(x[-1], results[-1])
             results.extend(last_results)
         elif isinstance(self.top_blocks, LastLevelMaxPool):
@@ -98,3 +101,31 @@ class LastLevelP6P7(nn.Module):
         p6 = self.p6(x)
         p7 = self.p7(F.relu(p6))
         return [p6, p7]
+
+class NewLastLevelP6P7(nn.Module):
+    """
+    This module is used in RetinaNet to generate extra layers, P6 and P7, fused with p4, p3 accordingly
+    """
+    def __init__(self, in_channels, out_channels):
+        super(NewLastLevelP6P7, self).__init__()
+        self.p6 = nn.Conv2d(in_channels, out_channels, 3, 2, 1)
+        self.p7 = nn.Conv2d(out_channels, out_channels, 3, 2, 1)
+        for module in [self.p6, self.p7]:
+            nn.init.kaiming_uniform_(module.weight, a=1)
+            nn.init.constant_(module.bias, 0)
+        self.use_P5 = in_channels == out_channels
+
+    # add p4 to p6, p3 to p7
+    def forward(self, c5, p5, p4, p3):
+        x = p5 if self.use_P5 else c5
+        p6 = self.p6(x)
+        p7 = self.p7(F.relu(p6))
+        f6 = F.interpolate(
+            p4, size=(int(p6.shape[-2]), int(p6.shape[-1])),
+            mode='nearest' )
+        f7 = F.interpolate(
+            p3, size=(int(p7.shape[-2]), int(p7.shape[-1])),
+            mode='nearest')
+        h6 = p6 + f6
+        h7 = p7 + f7
+        return [h6, h7]

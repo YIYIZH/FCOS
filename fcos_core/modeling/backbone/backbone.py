@@ -74,10 +74,9 @@ def build_resnet_fpn_p3p7_backbone(cfg):
 @registry.BACKBONES.register("R-50-newFPN-RETINANET")
 def build_resnet_fpn_p3p7_backbone(cfg):
     body = resnet.ResNet(cfg)
-    in_channels_stage2 = cfg.MODEL.RESNETS.RES2_OUT_CHANNELS
-    out_channels = cfg.MODEL.RESNETS.BACKBONE_OUT_CHANNELS
-    in_channels_p6p7 = in_channels_stage2 * 8 if cfg.MODEL.RETINANET.USE_C5 \
-        else out_channels
+    in_channels_stage2 = cfg.MODEL.RESNETS.RES2_OUT_CHANNELS # res2 output channel = 256
+    out_channels = cfg.MODEL.RESNETS.BACKBONE_OUT_CHANNELS #output feature map depth or channel = 256
+    in_channels_p6p7 = out_channels
     fpn = fpn_module.FPN(
         in_channels_list=[
             0,
@@ -89,7 +88,7 @@ def build_resnet_fpn_p3p7_backbone(cfg):
         conv_block=conv_with_kaiming_uniform(
             cfg.MODEL.FPN.USE_GN, cfg.MODEL.FPN.USE_RELU
         ),
-        top_blocks=fpn_module.LastLevelP6P7(in_channels_p6p7, out_channels),
+        top_blocks=fpn_module.NewLastLevelP6P7(in_channels_p6p7, out_channels),
     )
     model = nn.Sequential(OrderedDict([("body", body), ("fpn", fpn)]))
     model.out_channels = out_channels
