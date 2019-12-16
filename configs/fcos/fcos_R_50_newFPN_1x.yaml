@@ -10,8 +10,8 @@ MODEL:
   RETINANET:
     USE_C5: False # FCOS uses P5 instead of C5
 DATASETS:
-  TRAIN: ("coco_2017_train", "coco_2017_val")
-  TEST: ("coco_2017_test_dev",)
+  TRAIN: ("coco_2017_train",)
+  TEST: ("coco_2017_val",)
 INPUT:
   MIN_SIZE_TRAIN: (800,)
   MAX_SIZE_TRAIN: 1333
@@ -24,7 +24,7 @@ SOLVER:
   WEIGHT_DECAY: 0.0001
   STEPS: (60000, 80000)
   MAX_ITER: 90000
-  IMS_PER_BATCH: 4
+  IMS_PER_BATCH: 16
   WARMUP_METHOD: "constant"
 TEST:
   BBOX_AUG:
