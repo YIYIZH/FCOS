@@ -1,10 +1,10 @@
 MODEL:
   META_ARCHITECTURE: "GeneralizedRCNN"
-  WEIGHT: "/home/yiyifrisky/code/FCOS/training_dir/fcos_R_50_FPN_1x/model_final.pth" #"catalog://ImageNetPretrained/MSRA/R-50"
+  WEIGHT: "catalog://ImageNetPretrained/MSRA/R-50"
   RPN_ONLY: True
   FCOS_ON: True
   BACKBONE:
-    CONV_BODY: "R-50-FPN-RETINANET"
+    CONV_BODY: "R-50-BFP-RETINANET"
   RESNETS:
     BACKBONE_OUT_CHANNELS: 256
   RETINANET:
@@ -24,7 +24,7 @@ SOLVER:
   WEIGHT_DECAY: 0.0001
   STEPS: (60000, 80000)
   MAX_ITER: 90000
-  IMS_PER_BATCH: 16
+  IMS_PER_BATCH: 4
   WARMUP_METHOD: "constant"
 TEST:
   BBOX_AUG:

@@ -94,6 +94,29 @@ def build_resnet_fpn_p3p7_backbone(cfg):
     model.out_channels = out_channels
     return model
 
+
+@registry.BACKBONES.register("R-50-BFP-RETINANET")
+def build_resnet_bfp_backbone(cfg):
+    body = resnet.ResNet(cfg)
+    in_channels_stage2 = cfg.MODEL.RESNETS.RES2_OUT_CHANNELS # res2 output channel = 256
+    out_channels = cfg.MODEL.RESNETS.BACKBONE_OUT_CHANNELS #output feature map depth or channel = 256
+    fpn = fpn_module.FPN(
+        in_channels_list=[
+            in_channels_stage2,
+            in_channels_stage2 * 2,
+            in_channels_stage2 * 4,
+            in_channels_stage2 * 8,
+        ],
+        out_channels=out_channels,
+        conv_block=conv_with_kaiming_uniform(
+            cfg.MODEL.FPN.USE_GN, cfg.MODEL.FPN.USE_RELU
+        ),
+    )
+    model = nn.Sequential(OrderedDict([("body", body), ("fpn", fpn)]))
+    model.out_channels = out_channels
+    return model
+
+
 @registry.BACKBONES.register("MNV2-FPN-RETINANET")
 def build_mnv2_fpn_backbone(cfg):
     body = mobilenet.MobileNetV2(cfg)

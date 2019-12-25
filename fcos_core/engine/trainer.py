@@ -54,7 +54,7 @@ def do_train(
     start_training_time = time.time()
     end = time.time()
     pytorch_1_1_0_or_later = is_pytorch_1_1_0_or_later()
-    for iteration, (images, targets, _) in enumerate(data_loader, start_iter):
+    for iteration, (images, targets, id) in enumerate(data_loader, start_iter):
         data_time = time.time() - end
         iteration = iteration + 1
         arguments["iteration"] = iteration
@@ -65,6 +65,8 @@ def do_train(
 
         images = images.to(device)
         targets = [target.to(device) for target in targets]
+
+        print(id)
 
         loss_dict = model(images, targets)
 

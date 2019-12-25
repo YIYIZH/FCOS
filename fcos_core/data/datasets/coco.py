@@ -93,7 +93,8 @@ class COCODataset(torchvision.datasets.coco.CocoDetection):
         if self._transforms is not None:
             img, target = self._transforms(img, target)
 
-        return img, target, idx
+        id = self.id_to_img_map[idx]
+        return img, target, id
 
     def get_img_info(self, index):
         img_id = self.id_to_img_map[index]

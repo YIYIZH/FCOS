@@ -149,10 +149,23 @@ class FCOSLossComputation(object):
         labels = []
         reg_targets = []
         xs, ys = locations[:, 0], locations[:, 1]
-
+        box_num = []
         for im_i in range(len(targets)):
             targets_per_im = targets[im_i]
             assert targets_per_im.mode == "xyxy"
+            #box_num.append(targets_per_im.bbox.shape[0])
+
+            '''
+            # in case the image has no targets
+            if targets_per_im.bbox.shape[0] == 0:
+                size = xs.shape[0]
+                labels_per_im = torch.zero[size]
+                reg_targets_per_im = torch.zero[size][4]
+                labels.append(labels_per_im)
+                reg_targets.append(reg_targets_per_im)
+                continue
+            '''
+
             bboxes = targets_per_im.bbox
             labels_per_im = targets_per_im.get_field("labels")
             area = targets_per_im.area()
@@ -162,7 +175,9 @@ class FCOSLossComputation(object):
             r = bboxes[:, 2][None] - xs[:, None]
             b = bboxes[:, 3][None] - ys[:, None]
             reg_targets_per_im = torch.stack([l, t, r, b], dim=2)
-
+            if targets_per_im.bbox.shape[0] == 0:
+                print("targets_per_im.bbox.shape[0]=0")
+            print(reg_targets_per_im.shape)
             if self.center_sampling_radius > 0:
                 is_in_boxes = self.get_sample_region(
                     bboxes,
@@ -171,6 +186,7 @@ class FCOSLossComputation(object):
                     xs, ys,
                     radius=self.center_sampling_radius
                 )
+                print("im here!!!!!!!!")
             else:
                 # no center sampling, it will use all the locations within a ground-truth box
                 is_in_boxes = reg_targets_per_im.min(dim=2)[0] > 0
@@ -196,6 +212,7 @@ class FCOSLossComputation(object):
             labels.append(labels_per_im)
             reg_targets.append(reg_targets_per_im)
 
+        #print(box_num)
         return labels, reg_targets
 
     def compute_centerness_targets(self, reg_targets):
