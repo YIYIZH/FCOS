@@ -9,7 +9,7 @@ class DatasetCatalog(object):
     DATASETS = {
         "coco_2017_train": {
             "img_dir": "/home/yiyifrisky/data/COCO2017/train2017",
-            "ann_file": "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017_ss.json"
+            "ann_file": "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017.json"
         },
         "coco_2017_val": {
             "img_dir": "/home/yiyifrisky/data/COCO2017/val2017",

@@ -65,11 +65,13 @@ def build_resnet_fpn_p3p7_backbone(cfg):
         conv_block=conv_with_kaiming_uniform(
             cfg.MODEL.FPN.USE_GN, cfg.MODEL.FPN.USE_RELU
         ),
+        # add last level P6 and P7
         top_blocks=fpn_module.LastLevelP6P7(in_channels_p6p7, out_channels),
     )
     model = nn.Sequential(OrderedDict([("body", body), ("fpn", fpn)]))
     model.out_channels = out_channels
     return model
+
 
 @registry.BACKBONES.register("R-50-newFPN-RETINANET")
 def build_resnet_fpn_p3p7_backbone(cfg):

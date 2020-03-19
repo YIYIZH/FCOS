@@ -66,7 +66,7 @@ def do_train(
         images = images.to(device)
         targets = [target.to(device) for target in targets]
 
-        print(id)
+        print(id) # print image ids
 
         loss_dict = model(images, targets)
 

@@ -100,6 +100,7 @@ class FCOSLossComputation(object):
         return inside_gt_bbox_mask
 
     def prepare_targets(self, points, targets):
+
         object_sizes_of_interest = [
             [-1, 64],
             [64, 128],
@@ -107,10 +108,20 @@ class FCOSLossComputation(object):
             [256, 512],
             [512, INF],
         ]
+        '''
+        # modified size definition
+        object_sizes_of_interest = [
+            [-1, 32],
+            [32, 64],
+            [64, 128],
+            [128, 256],
+            [256, INF],
+        ]
+        '''
         expanded_object_sizes_of_interest = []
         for l, points_per_level in enumerate(points):
             object_sizes_of_interest_per_level = \
-                points_per_level.new_tensor(object_sizes_of_interest[l])
+                points_per_level.new_tensor(object_sizes_of_interest[l]) # same type, device to points, new data
             expanded_object_sizes_of_interest.append(
                 object_sizes_of_interest_per_level[None].expand(len(points_per_level), -1)
             )
@@ -149,7 +160,7 @@ class FCOSLossComputation(object):
         labels = []
         reg_targets = []
         xs, ys = locations[:, 0], locations[:, 1]
-        box_num = []
+        #box_num = []
         for im_i in range(len(targets)):
             targets_per_im = targets[im_i]
             assert targets_per_im.mode == "xyxy"
@@ -168,16 +179,15 @@ class FCOSLossComputation(object):
 
             bboxes = targets_per_im.bbox
             labels_per_im = targets_per_im.get_field("labels")
-            area = targets_per_im.area()
+            area = targets_per_im.area() # area of each box
 
             l = xs[:, None] - bboxes[:, 0][None]
             t = ys[:, None] - bboxes[:, 1][None]
             r = bboxes[:, 2][None] - xs[:, None]
             b = bboxes[:, 3][None] - ys[:, None]
             reg_targets_per_im = torch.stack([l, t, r, b], dim=2)
-            if targets_per_im.bbox.shape[0] == 0:
-                print("targets_per_im.bbox.shape[0]=0")
-            print(reg_targets_per_im.shape)
+            # debug for im shape
+            # print(reg_targets_per_im.shape)
             if self.center_sampling_radius > 0:
                 is_in_boxes = self.get_sample_region(
                     bboxes,
@@ -186,10 +196,9 @@ class FCOSLossComputation(object):
                     xs, ys,
                     radius=self.center_sampling_radius
                 )
-                print("im here!!!!!!!!")
             else:
                 # no center sampling, it will use all the locations within a ground-truth box
-                is_in_boxes = reg_targets_per_im.min(dim=2)[0] > 0
+                is_in_boxes = reg_targets_per_im.min(dim=2)[0] > 0 # if l,t,r,b are all positive
 
             max_reg_targets_per_im = reg_targets_per_im.max(dim=2)[0]
             # limit the regression range for each location
@@ -199,13 +208,13 @@ class FCOSLossComputation(object):
 
             locations_to_gt_area = area[None].repeat(len(locations), 1)
             locations_to_gt_area[is_in_boxes == 0] = INF
-            locations_to_gt_area[is_cared_in_the_level == 0] = INF
+            locations_to_gt_area[is_cared_in_the_level == 0] = INF # [22400, num_box]
 
             # if there are still more than one objects for a location,
             # we choose the one with minimal area
             locations_to_min_area, locations_to_gt_inds = locations_to_gt_area.min(dim=1)
 
-            reg_targets_per_im = reg_targets_per_im[range(len(locations)), locations_to_gt_inds]
+            reg_targets_per_im = reg_targets_per_im[range(len(locations)), locations_to_gt_inds] # 22400, num_bbox
             labels_per_im = labels_per_im[locations_to_gt_inds]
             labels_per_im[locations_to_min_area == INF] = 0
 
