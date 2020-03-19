@@ -6,6 +6,37 @@
  @File : prepare_data.py 
  @Description:
 """
+import json
+'''
+###################
+##################
+###################
+from pycocotools.coco import COCO
+
+input = "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017_ss.json"
+output = "/home/yiyifrisky/data/COCO2017/annotations/"
+f = open(input)
+f_data = json.load(f)
+s = open(output + 'analyze_ss.json', 'w')
+bbox = f_data['annotations']
+count = [0]*80
+
+coco = COCO(input)
+l = coco.getCatIds()
+json_category_id_to_contiguous_id = {
+    v: i + 1 for i, v in enumerate(l)
+        }
+
+for seg in bbox:
+    id = seg['category_id']
+    idx = json_category_id_to_contiguous_id[id]
+    count[idx-1] += 1
+
+s.write(json.dumps(count))
+
+####################
+###############
+####################
 
 import json
 input = "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017_b.json"
@@ -18,8 +49,6 @@ s.write('{"info": ' + json.dumps(f_data['info']) + ',"licenses": ' + json.dumps(
 
 bbox = f_data['annotations']
 first_s = 1
-first_m = 1
-first_b = 1
 for seg in bbox:
     if seg['iscrowd'] == 0:
         if first_s == 1:
@@ -32,7 +61,7 @@ s.write('],"categories": ' + json.dumps(f_data['categories']) + '}')
 ###############
 #################
 ##############
-'''
+
 input = "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017.json"
 output = "/home/yiyifrisky/data/COCO2017/annotations/"
 metric = [32*32, 96*96]
@@ -108,3 +137,15 @@ for i in range (4):
 print(num)
 
 '''
+input = "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017_ss.json"
+
+f = open(input)
+f_data = json.load(f)
+bbox = f_data['annotations']
+
+list3 = [333775, 96414, 102377, 428440]
+for i in range (4):
+    print("1111")
+    for box in bbox:
+        if box['image_id'] == list3[i]:
+            print(box['bbox'])
