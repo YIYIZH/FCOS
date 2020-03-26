@@ -14,6 +14,7 @@ import cv2, os
 from fcos_core.config import cfg
 from predictor import COCODemo
 from datasets import LoadImages
+import torch_utils
 
 import time
 
@@ -22,13 +23,13 @@ def main():
     parser = argparse.ArgumentParser(description="PyTorch Object Detection Webcam Demo")
     parser.add_argument(
         "--config-file",
-        default="../configs/fcos/fcos_R_50_FPN_1x.yaml",
+        default="../configs/fcos/fcos_imprv_dcnv2_X_101_64x4d_FPN_2x.yaml",
         metavar="FILE",
         help="path to config file",
     )
     parser.add_argument(
         "--weights",
-        default="../weights/FCOS_R_50_FPN_1x.pth",
+        default="../weights/FCOS_imprv_dcnv2_X_101_64x4d_FPN_2x.pth",
         metavar="FILE",
         help="path to the trained model",
     )
@@ -101,6 +102,7 @@ def main():
         0.5109297037124634, 0.4685552418231964, 0.5148998498916626,
         0.4224434792995453, 0.4998510777950287
     ]
+    #thresholds_for_classes = [0.5] * 80
     vid_path, vid_writer = None, None
     source = args.source
     dataset = LoadImages(source)
@@ -116,7 +118,10 @@ def main():
     t0 = time.time()
     for path, img, im0s, vid_cap in dataset:
         save_path = "./out" + path
+        t1 = torch_utils.time_synchronized()
         composite = coco_demo.run_on_opencv_image(im0s)
+        t2 = torch_utils.time_synchronized()
+        print('Done. (%.3fs)' % (t2 - t1))
 
         if vid_path != save_path:  # new video
             vid_path = save_path
