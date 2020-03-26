@@ -56,7 +56,7 @@ class COCODataset(torchvision.datasets.coco.CocoDetection):
 
         # remove images without small scale annotations
         scale_only = True
-        if scale_only:
+        if remove_images_without_annotations & scale_only:
             ids = []
             for img_id in self.ids:
                 ann_ids = self.coco.getAnnIds(imgIds=img_id, iscrowd=None)
