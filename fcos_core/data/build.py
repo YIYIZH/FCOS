@@ -40,7 +40,7 @@ def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
         if data["factory"] == "PascalVOCDataset":
             args["use_difficult"] = not is_train
         args["transforms"] = transforms
-        # make dataset from factory
+        # make dataset from factory in data/dataset/coco.py
         dataset = factory(**args)
         datasets.append(dataset)
 

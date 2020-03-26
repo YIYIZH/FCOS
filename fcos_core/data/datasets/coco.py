@@ -54,6 +54,19 @@ class COCODataset(torchvision.datasets.coco.CocoDetection):
                     ids.append(img_id)
             self.ids = ids
 
+        # remove images without small scale annotations
+        scale_only = True
+        if scale_only:
+            ids = []
+            for img_id in self.ids:
+                ann_ids = self.coco.getAnnIds(imgIds=img_id, iscrowd=None)
+                anno = self.coco.loadAnns(ann_ids)
+                for ann in anno:
+                    if ann['area'] < 32*32:
+                        ids.append(img_id)
+                        break
+            self.ids = ids
+
         self.json_category_id_to_contiguous_id = {
             v: i + 1 for i, v in enumerate(self.coco.getCatIds())
         }

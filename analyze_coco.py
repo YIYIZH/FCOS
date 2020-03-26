@@ -11,28 +11,7 @@ import json
 import matplotlib.pyplot as plt
 
 #cats = coco.loadCats(coco.getCatIds())
-'''
-input = "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017_bb.json"
-output = "/home/yiyifrisky/data/COCO2017/annotations/"
 
-f = open(input)
-f_data = json.load(f)
-bbox = f_data['annotations']
-image = f_data['images']
-y, count = 0, 0
-for img in image:
-        id = img['id']
-        w = img['width']
-        h = img['height']
-        for seg in bbox:
-            if seg['area'] == 0 or seg['image_id'] != id:
-                continue
-            label_y = seg['bbox'][1] + seg['bbox'][3]
-            y += label_y/h
-            count += 1
-o = y/count
-print(o)
-'''
 coco = COCO('/home/yiyifrisky/data/COCO2017/annotations/instances_train2017_bb.json')
 input = "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017_bb.json"
 output = "/home/yiyifrisky/data/COCO2017/annotations/"
