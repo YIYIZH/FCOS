@@ -287,7 +287,7 @@ _C.MODEL.RESNETS.DEFORMABLE_GROUPS = 1
 # FCOS Options
 # ---------------------------------------------------------------------------- #
 _C.MODEL.FCOS = CN()
-_C.MODEL.FCOS.NUM_CLASSES = 81  # the number of classes including background
+_C.MODEL.FCOS.NUM_CLASSES = 11  # the number of classes including background
 _C.MODEL.FCOS.FPN_STRIDES = [8, 16, 32, 64, 128]
 _C.MODEL.FCOS.PRIOR_PROB = 0.01
 _C.MODEL.FCOS.INFERENCE_TH = 0.05
@@ -433,7 +433,7 @@ _C.SOLVER.WARMUP_FACTOR = 1.0 / 3
 _C.SOLVER.WARMUP_ITERS = 500
 _C.SOLVER.WARMUP_METHOD = "linear"
 
-_C.SOLVER.CHECKPOINT_PERIOD = 2500
+_C.SOLVER.CHECKPOINT_PERIOD = 10000
 
 # Number of images per batch
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will

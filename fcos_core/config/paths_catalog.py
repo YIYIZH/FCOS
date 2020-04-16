@@ -7,6 +7,34 @@ import os
 class DatasetCatalog(object):
     DATA_DIR = "datasets"
     DATASETS = {
+        "bdd_val":{
+            "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/val",
+            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_val.json"
+        },
+        "bdd_val_daytime": {
+            "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/val_daytime",
+            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_val_daytime.json"
+        },
+        "bdd_val_night": {
+            "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/val_night",
+            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_val_night.json"
+        },
+        "bdd_train": {
+            "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/train",
+            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_train.json"
+        },
+        "bdd_train_night": {
+            "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/train",
+            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_train_night.json"
+        },
+        "bdd_train_daytime": {
+            "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/train",
+            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_train_daytime.json"
+        },
+        "bdd_train_daytime_fake": {
+            "img_dir": "/dlwsdata3/public/bdd/day_night_256*256/test_latest/images",
+            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_train_daytime_fake.json"
+        },
         "coco_2017_train": {
             "img_dir": "/home/yiyifrisky/data/COCO2017/train2017",
             "ann_file": "/home/yiyifrisky/data/COCO2017/annotations/instances_train2017.json"
@@ -132,6 +160,17 @@ class DatasetCatalog(object):
             )
             return dict(
                 factory="PascalVOCDataset",
+                args=args,
+            )
+        elif "bdd" in name:
+            data_dir = DatasetCatalog.DATA_DIR
+            attrs = DatasetCatalog.DATASETS[name]
+            args = dict(
+                root=os.path.join(data_dir, attrs["img_dir"]),
+                ann_file=os.path.join(data_dir, attrs["ann_file"]),
+            )
+            return dict(
+                factory="COCODataset",
                 args=args,
             )
         raise RuntimeError("Dataset not available: {}".format(name))
