@@ -32,7 +32,7 @@ class DatasetCatalog(object):
             "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_train_daytime.json"
         },
         "bdd_train_daytime_fake": {
-            "img_dir": "/dlwsdata3/public/bdd/day_night_256*256/test_latest/images",
+            "img_dir": "/dlwsdata3/public/bdd/day_night_256*256/test_latest/images_resizeto1280",
             "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_train_daytime_fake.json"
         },
         "coco_2017_train": {

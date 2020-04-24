@@ -26,6 +26,9 @@ def bdd2coco_detection(id_dict, labeled_images, fn):
 
     counter = 0
     for i in tqdm(labeled_images):
+        if i['attributes']['timeofday'] != 'daytime':
+            continue
+
         counter += 1
         image = dict()
         image['file_name'] = i['name']
@@ -97,7 +100,7 @@ if __name__ == '__main__':
     print('Converting training set...')
 
     out_fn = os.path.join(args.save_path,
-                          'bdd100k_labels_images_det_coco_train.json')
+                          'bdd100k_labels_images_det_coco_train_daytime.json')
     bdd2coco_detection(attr_id_dict, train_labels, out_fn)
 
     print('Loading validation set...')
@@ -108,5 +111,5 @@ if __name__ == '__main__':
     print('Converting validation set...')
 
     out_fn = os.path.join(args.save_path,
-                          'bdd100k_labels_images_det_coco_val.json')
+                          'bdd100k_labels_images_det_coco_val_daytime.json')
     bdd2coco_detection(attr_id_dict, val_labels, out_fn)
