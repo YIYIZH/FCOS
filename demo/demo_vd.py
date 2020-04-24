@@ -23,13 +23,13 @@ def main():
     parser = argparse.ArgumentParser(description="PyTorch Object Detection Webcam Demo")
     parser.add_argument(
         "--config-file",
-        default="../configs/fcos/fcos_imprv_dcnv2_X_101_64x4d_FPN_2x.yaml",
+        default="../configs/fcos/fcos_R_50_FPN_1x_bdd.yaml",
         metavar="FILE",
         help="path to config file",
     )
     parser.add_argument(
         "--weights",
-        default="../weights/FCOS_imprv_dcnv2_X_101_64x4d_FPN_2x.pth",
+        default="/home/yiyifrisky/code/FCOS/training_dir/bdd_nightwithfake/model_final.pth",
         metavar="FILE",
         help="path to the trained model",
     )
@@ -73,7 +73,7 @@ def main():
     # The following per-class thresholds are computed by maximizing
     # per-class f-measure in their precision-recall curve.
     # Please see compute_thresholds_for_classes() in coco_eval.py for details.
-    thresholds_for_classes = [
+    thresholds_for_coco_classes = [
         0.4923645853996277, 0.4928510785102844, 0.5040897727012634,
         0.4912887513637543, 0.5016880631446838, 0.5278812646865845,
         0.5351834893226624, 0.5003424882888794, 0.4955945909023285,
@@ -102,6 +102,11 @@ def main():
         0.5109297037124634, 0.4685552418231964, 0.5148998498916626,
         0.4224434792995453, 0.4998510777950287
     ]
+    thresholds_for_bdd_classes = [0.48780617117881775, 0.5085304975509644, 0.5058003664016724,
+                                  0.5046775341033936, 0.5318371057510376, 0.459444135427475,
+                                  0.515097975730896, 0.4111378788948059, 0.4400688707828522,
+                                  0.35690930485725403]
+
     #thresholds_for_classes = [0.5] * 80
     vid_path, vid_writer = None, None
     source = args.source
@@ -110,7 +115,7 @@ def main():
     # prepare object that handles inference plus adds predictions on top of image
     coco_demo = COCODemo(
         cfg,
-        confidence_thresholds_for_classes=thresholds_for_classes,
+        confidence_thresholds_for_classes=thresholds_for_bdd_classes,
         min_image_size=args.min_image_size
     )
 

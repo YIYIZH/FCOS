@@ -13,7 +13,7 @@ from fcos_core.utils import cv2_util
 
 class COCODemo(object):
     # COCO categories for pretty print
-    CATEGORIES = [
+    CATEGORIES_coco = [
         "__background",
         "person",
         "bicycle",
@@ -95,6 +95,20 @@ class COCODemo(object):
         "teddy bear",
         "hair drier",
         "toothbrush",
+    ]
+
+    CATEGORIES_bdd = [
+        "__background",
+        "person",
+        "rider",
+        "car",
+        "bus",
+        "truck",
+        "bike",
+        "motor",
+        "traffic light",
+        "traffic sign",
+        "train",
     ]
 
     def __init__(
@@ -358,7 +372,7 @@ class COCODemo(object):
         """
         scores = predictions.get_field("scores").tolist()
         labels = predictions.get_field("labels").tolist()
-        labels = [self.CATEGORIES[i] for i in labels]
+        labels = [self.CATEGORIES_bdd[i] for i in labels]
         boxes = predictions.bbox
 
         template = "{}: {:.2f}"
