@@ -1,6 +1,6 @@
 MODEL:
   META_ARCHITECTURE: "GeneralizedRCNN"
-  WEIGHT: "/home/yiyifrisky/code/FCOS/training_dir/fcos_R_50_FPN_1x/model_final.pth" #"catalog://ImageNetPretrained/MSRA/R-50"
+  WEIGHT: "/home/yiyifrisky/code/FCOS/training_dir/fcos_R_50_FPN_1x/model_final.pth"
   RPN_ONLY: True
   FCOS_ON: True
   BACKBONE:
