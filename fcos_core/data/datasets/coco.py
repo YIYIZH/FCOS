@@ -55,14 +55,14 @@ class COCODataset(torchvision.datasets.coco.CocoDetection):
             self.ids = ids
 
         # remove images without small scale annotations
-        scale_only = True
+        scale_only = False
         if remove_images_without_annotations & scale_only:
             ids = []
             for img_id in self.ids:
                 ann_ids = self.coco.getAnnIds(imgIds=img_id, iscrowd=None)
                 anno = self.coco.loadAnns(ann_ids)
                 for ann in anno:
-                    if ann['area'] < 32*32:
+                    if ann['area'] > 96*96:
                         ids.append(img_id)
                         break
             self.ids = ids
