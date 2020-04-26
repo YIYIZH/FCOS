@@ -83,9 +83,15 @@ def _compute_aspect_ratios(dataset):
 
 
 def make_batch_data_sampler(
-    dataset, sampler, aspect_grouping, images_per_batch, num_iters=None, start_iter=0
+    dataset, sampler, aspect_grouping, alternate_train, images_per_batch, num_iters=None, start_iter=0
 ):
-    if aspect_grouping:
+    if alternate_train:
+        aspect_ratios = _compute_aspect_ratios(dataset)
+        group_ids = _quantize(aspect_ratios, aspect_grouping)
+        batch_sampler = samplers.GroupedBatchSampler(
+            sampler, group_ids, images_per_batch, drop_uneven=False
+        )
+    elif aspect_grouping:
         if not isinstance(aspect_grouping, (list, tuple)):
             aspect_grouping = [aspect_grouping]
         aspect_ratios = _compute_aspect_ratios(dataset)
@@ -143,6 +149,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0):
     # group in two cases: those with width / height > 1, and the other way around,
     # but the code supports more general grouping strategy
     aspect_grouping = [1] if cfg.DATALOADER.ASPECT_RATIO_GROUPING else []
+    alternate_train = True if cfg.DATALOADER.ALTERNATE_TRAINING else False
 
     paths_catalog = import_file(
         "fcos_core.config.paths_catalog", cfg.PATHS_CATALOG, True
@@ -158,7 +165,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0):
     for dataset in datasets:
         sampler = make_data_sampler(dataset, shuffle, is_distributed)
         batch_sampler = make_batch_data_sampler(
-            dataset, sampler, aspect_grouping, images_per_gpu, num_iters, start_iter
+            dataset, sampler, aspect_grouping, alternate_train, images_per_gpu, num_iters, start_iter
         )
         collator = BBoxAugCollator() if not is_train and cfg.TEST.BBOX_AUG.ENABLED else \
             BatchCollator(cfg.DATALOADER.SIZE_DIVISIBILITY)
