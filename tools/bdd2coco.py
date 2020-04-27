@@ -8,12 +8,12 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='BDD100K to COCO format')
     parser.add_argument(
           "-l", "--label_dir",
-          default="/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/",
+          default="/home/zhangyy/data/bdd/100k/",
           help="root directory of BDD label Json files",
     )
     parser.add_argument(
           "-s", "--save_path",
-          default="/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/",
+          default="/home/zhangyy/data/bdd/100k/",
           help="save root directory of BDD label Json files",
     )
     return parser.parse_args()
@@ -26,7 +26,7 @@ def bdd2coco_detection(id_dict, labeled_images, fn):
 
     counter = 0
     for i in tqdm(labeled_images):
-        if i['attributes']['timeofday'] != 'daytime':
+        if i['attributes']['timeofday'] != 'night' and i['attributes']['timeofday'] != 'daytime':
             continue
 
         counter += 1
@@ -34,8 +34,8 @@ def bdd2coco_detection(id_dict, labeled_images, fn):
         image['file_name'] = i['name']
         image['height'] = 720
         image['width'] = 1280
-
         image['id'] = counter
+        image['time'] = i['attributes']['timeofday']
 
         empty_image = True
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     print('Converting training set...')
 
     out_fn = os.path.join(args.save_path,
-                          'bdd100k_labels_images_det_coco_train_daytime.json')
+                          'bdd_coco_train_night+day_with_time.json')
     bdd2coco_detection(attr_id_dict, train_labels, out_fn)
 
     print('Loading validation set...')
@@ -111,5 +111,5 @@ if __name__ == '__main__':
     print('Converting validation set...')
 
     out_fn = os.path.join(args.save_path,
-                          'bdd100k_labels_images_det_coco_val_daytime.json')
+                          'bdd_coco_val_night+day_with_time.json')
     bdd2coco_detection(attr_id_dict, val_labels, out_fn)

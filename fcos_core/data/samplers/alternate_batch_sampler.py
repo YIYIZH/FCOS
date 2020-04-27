@@ -19,6 +19,7 @@ class AlternateBatchSampler(BatchSampler):
     It enforces that elements from the same group should appear in groups of batch_size.
     It also tries to provide mini-batches which follows an ordering which is
     as close as possible to the ordering from the original sampler.
+    Finally it merge two groups alternately one by one.
 
     Arguments:
         sampler (Sampler): Base sampler.
@@ -75,35 +76,39 @@ class AlternateBatchSampler(BatchSampler):
 
         # splits each cluster in batch_size, and merge as a list of tensors
         splits = [c.split(self.batch_size) for c in permuted_clusters]
-        merged = tuple(itertools.chain.from_iterable(splits))
+        # merge two tuples one by one, if the length is different, reuse the batches in the shoter tuple
+        len_0 = len(splits[0])
+        len_1 = len(splits[1])
+        restart = False
+        i, j = 0, 0
+        merged = []
+        while 1:
+            if i < len_0:
+                merged.append(splits[0][i])
+                i += 1
+            elif restart is True:
+                break
+            else:
+                i = 0
+                restart = True
 
-        # now each batch internally has the right order, but
-        # they are grouped by clusters. Find the permutation between
-        # different batches that brings them as close as possible to
-        # the order that we have in the sampler. For that, we will consider the
-        # ordering as coming from the first element of each batch, and sort
-        # correspondingly
-        first_element_of_batch = [t[0].item() for t in merged]
-        # get and inverse mapping from sampled indices and the position where
-        # they occur (as returned by the sampler)
-        inv_sampled_ids_map = {v: k for k, v in enumerate(sampled_ids.tolist())}
-        # from the first element in each batch, get a relative ordering
-        first_index_of_batch = torch.as_tensor(
-            [inv_sampled_ids_map[s] for s in first_element_of_batch]
-        )
+            if j < len_1:
+                merged.append(splits[1][j])
+                j += 1
+            elif restart is True:
+                break
+            else:
+                j = 0
+                restart = True
 
-        # permute the batches so that they approximately follow the order
-        # from the sampler
-        permutation_order = first_index_of_batch.sort(0)[1].tolist()
-        # finally, permute the batches
-        batches = [merged[i].tolist() for i in permutation_order]
-
+        batches = merged
         if self.drop_uneven:
             kept = []
-            for batch in batches:
+            for batch in merged:
                 if len(batch) == self.batch_size:
                     kept.append(batch)
             batches = kept
+
         return batches
 
     def __iter__(self):

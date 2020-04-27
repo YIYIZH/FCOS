@@ -317,6 +317,16 @@ def evaluate_predictions_on_coco(
 
     # coco_dt = coco_gt.loadRes(coco_results)
     coco_eval = COCOeval(coco_gt, coco_dt, iou_type)
+    imgIds = sorted(coco_gt.getImgIds())
+    for cat in range(10):
+        coco_eval.params.catIds = [cat + 1]  # person id : 1
+        name = coco_gt.cats[cat + 1]['name']
+        coco_eval.params.imgIds = imgIds
+        coco_eval.evaluate()
+        coco_eval.accumulate()
+        print(name)
+        coco_eval.summarize()
+
     coco_eval.evaluate()
     coco_eval.accumulate()
     coco_eval.summarize()

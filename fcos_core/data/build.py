@@ -82,13 +82,25 @@ def _compute_aspect_ratios(dataset):
     return aspect_ratios
 
 
+def _get_time_label(dataset):
+    time_list = []
+    for i in range(len(dataset)):
+        img_info = dataset.get_img_info(i)
+        time = img_info["time"]
+        if time == 'night':
+            time_list.append(2)
+        else:
+            time_list.append(0)
+    return time_list
+
+
 def make_batch_data_sampler(
     dataset, sampler, aspect_grouping, alternate_train, images_per_batch, num_iters=None, start_iter=0
 ):
     if alternate_train:
-        aspect_ratios = _compute_aspect_ratios(dataset)
-        group_ids = _quantize(aspect_ratios, aspect_grouping)
-        batch_sampler = samplers.GroupedBatchSampler(
+        time_label = _get_time_label(dataset)
+        group_ids = _quantize(time_label, alternate_train)
+        batch_sampler = samplers.AlternateBatchSampler(
             sampler, group_ids, images_per_batch, drop_uneven=False
         )
     elif aspect_grouping:
@@ -149,7 +161,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0):
     # group in two cases: those with width / height > 1, and the other way around,
     # but the code supports more general grouping strategy
     aspect_grouping = [1] if cfg.DATALOADER.ASPECT_RATIO_GROUPING else []
-    alternate_train = True if cfg.DATALOADER.ALTERNATE_TRAINING else False
+    alternate_train = [1] if cfg.DATALOADER.ALTERNATE_TRAINING else []
 
     paths_catalog = import_file(
         "fcos_core.config.paths_catalog", cfg.PATHS_CATALOG, True
