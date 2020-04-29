@@ -10,10 +10,18 @@ def make_optimizer(cfg, model):
     for key, value in model.named_parameters():
         if not value.requires_grad:
             continue
-        lr = cfg.SOLVER.BASE_LR
-        weight_decay = cfg.SOLVER.WEIGHT_DECAY
+        if "head_day" in key or "head_night" in key:
+            lr = cfg.SOLVER.BASE_LR
+            weight_decay = cfg.SOLVER.WEIGHT_DECAY
+        else:
+            lr = cfg.SOLVER.BASE_LR / 2
+            weight_decay = cfg.SOLVER.WEIGHT_DECAY
+
         if "bias" in key:
-            lr = cfg.SOLVER.BASE_LR * cfg.SOLVER.BIAS_LR_FACTOR
+            if "head_day" in key or "head_night" in key:
+                lr = cfg.SOLVER.BASE_LR * cfg.SOLVER.BIAS_LR_FACTOR
+            else:
+                lr = cfg.SOLVER.BASE_LR /2 * cfg.SOLVER.BIAS_LR_FACTOR
             weight_decay = cfg.SOLVER.WEIGHT_DECAY_BIAS
         if key.endswith(".offset.weight") or key.endswith(".offset.bias"):
             logger.info("set lr factor of {} as {}".format(
