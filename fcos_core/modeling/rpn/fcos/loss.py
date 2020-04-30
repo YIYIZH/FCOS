@@ -51,6 +51,7 @@ class FCOSLossComputation(object):
         # but we found that L1 in log scale can yield a similar performance
         self.box_reg_loss_func = IOULoss(self.iou_loss_type)
         self.centerness_loss_func = nn.BCEWithLogitsLoss(reduction="sum")
+        self.bi_loss_func = nn.BCEWithLogitsLoss(reduction="sum")
 
     def get_sample_region(self, gt, strides, num_points_per, gt_xs, gt_ys, radius=1.0):
         '''
@@ -205,7 +206,20 @@ class FCOSLossComputation(object):
                       (top_bottom.min(dim=-1)[0] / top_bottom.max(dim=-1)[0])
         return torch.sqrt(centerness)
 
-    def __call__(self, locations, box_cls, box_regression, centerness, targets):
+    def binary_loss_func(self, bi_class, t_label):
+        device = bi_class.device
+        num = bi_class.shape[0]
+        preds = bi_class.float()
+        if t_label == 'daytime':
+            t = torch.tensor([1.0, 0], device=device)
+            t = t.expand(num, 2)
+        else:
+            t = torch.tensor([0, 1.0], device=device)
+            t = t.expand(num, 2)
+        loss = self.bi_loss_func(preds, t)
+        return loss
+
+    def __call__(self, locations, box_cls, box_regression, centerness, targets, bi_class, time_label):
         """
         Arguments:
             locations (list[BoxList])
@@ -274,12 +288,18 @@ class FCOSLossComputation(object):
                 centerness_flatten,
                 centerness_targets
             ) / num_pos_avg_per_gpu
+            bi_loss = self.binary_loss_func(
+                bi_class,
+                time_label
+            )
         else:
             reg_loss = box_regression_flatten.sum()
             reduce_sum(centerness_flatten.new_tensor([0.0]))
             centerness_loss = centerness_flatten.sum()
+            bi_class = torch.flatten(bi_class, 1)
+            bi_loss = bi_class.flaten(1).sum()
 
-        return cls_loss, reg_loss, centerness_loss
+        return cls_loss, reg_loss, centerness_loss, bi_loss
 
 
 def make_fcos_loss_evaluator(cfg):

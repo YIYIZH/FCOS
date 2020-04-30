@@ -6,6 +6,8 @@ import os
 
 class DatasetCatalog(object):
     DATA_DIR = "datasets"
+    Root_qjy = '/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/'
+    Root_server2 = '/home/zhangyy/data/bdd/100k/'
     DATASETS = {
         "bdd_val":{
             "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/val",
@@ -20,12 +22,12 @@ class DatasetCatalog(object):
             "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_val_night.json"
         },
         "bdd_train": {
-            "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/train",
-            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_train.json"
+            "img_dir": Root_server2 + "train",
+            "ann_file": Root_server2 + "bdd_coco_train_night+day_with_time.json",
         },
         "bdd_train_night": {
-            "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/train",
-            "ann_file": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/bdd100k_labels_images_det_coco_train_night.json"
+            "img_dir": Root_server2 + "train",
+            "ann_file": Root_server2 + "bdd100k_labels_images_det_coco_train_night.json"
         },
         "bdd_train_daytime": {
             "img_dir": "/dlwsdata3/yiyifrisky/bdd/bdd100k/images/100k/train",

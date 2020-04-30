@@ -30,7 +30,7 @@ class GeneralizedRCNN(nn.Module):
         self.rpn = build_rpn(cfg, self.backbone.out_channels)
         self.roi_heads = build_roi_heads(cfg, self.backbone.out_channels)
 
-    def forward(self, images, targets=None):
+    def forward(self, images, targets=None, time_label=None):
         """
         Arguments:
             images (list[Tensor] or ImageList): images to be processed
@@ -43,11 +43,15 @@ class GeneralizedRCNN(nn.Module):
                 like `scores`, `labels` and `mask` (for Mask R-CNN models).
 
         """
-        if self.training and targets is None:
-            raise ValueError("In training mode, targets should be passed")
+        if self.training:
+            if targets is None:
+                raise ValueError("In training mode, targets should be passed")
+            if time_label is None:
+                raise ValueError("In training mode, time_label should be passed")
+
         images = to_image_list(images)
         features = self.backbone(images.tensors)
-        proposals, proposal_losses = self.rpn(images, features, targets)
+        proposals, proposal_losses = self.rpn(images, features, targets, time_label)
         if self.roi_heads:
             x, result, detector_losses = self.roi_heads(features, proposals, targets)
         else:

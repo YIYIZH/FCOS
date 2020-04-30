@@ -100,7 +100,7 @@ class AlternateBatchSampler(BatchSampler):
             else:
                 j = 0
                 restart = True
-
+        # day,night,day,night in the batches
         batches = merged
         if self.drop_uneven:
             kept = []
