@@ -19,8 +19,8 @@ def compute_on_dataset(model, data_loader, device, timer=None):
     model.eval()
     results_dict = {}
     cpu_device = torch.device("cpu")
-    for _, batch in enumerate(tqdm(data_loader)):
-        images, targets, image_ids = batch
+    for i, (batch) in enumerate(tqdm(data_loader)):
+        images, targets, image_ids, _ = batch
         with torch.no_grad():
             if timer:
                 timer.tic()

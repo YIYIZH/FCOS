@@ -291,7 +291,7 @@ class FCOSLossComputation(object):
             bi_loss = self.binary_loss_func(
                 bi_class,
                 time_label
-            )
+            ) / bi_class.shape[0]
         else:
             reg_loss = box_regression_flatten.sum()
             reduce_sum(centerness_flatten.new_tensor([0.0]))

@@ -54,7 +54,7 @@ def do_train(
     start_training_time = time.time()
     end = time.time()
     pytorch_1_1_0_or_later = is_pytorch_1_1_0_or_later()
-    for iteration, (images, targets, time_label) in enumerate(data_loader, start_iter):
+    for iteration, (images, targets, _, time_label) in enumerate(data_loader, start_iter):
         data_time = time.time() - end
         iteration = iteration + 1
         arguments["iteration"] = iteration
@@ -88,7 +88,7 @@ def do_train(
         eta_seconds = meters.time.global_avg * (max_iter - iteration)
         eta_string = str(datetime.timedelta(seconds=int(eta_seconds)))
 
-        if iteration % 1 == 0 or iteration == max_iter:
+        if iteration % 10 == 0 or iteration == max_iter:
             logger.info(
                 meters.delimiter.join(
                     [

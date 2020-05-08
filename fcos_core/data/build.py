@@ -161,7 +161,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0):
     # group in two cases: those with width / height > 1, and the other way around,
     # but the code supports more general grouping strategy
     aspect_grouping = [1] if cfg.DATALOADER.ASPECT_RATIO_GROUPING else []
-    alternate_train = [1] if cfg.DATALOADER.ALTERNATE_TRAINING else []
+    alternate_train = [1] if cfg.DATALOADER.ALTERNATE_TRAINING and is_train else []
 
     paths_catalog = import_file(
         "fcos_core.config.paths_catalog", cfg.PATHS_CATALOG, True
