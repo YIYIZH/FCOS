@@ -327,6 +327,7 @@ def evaluate_predictions_on_coco(
         print(name)
         coco_eval.summarize()
 
+    coco_eval = COCOeval(coco_gt, coco_dt, iou_type)
     coco_eval.evaluate()
     coco_eval.accumulate()
     coco_eval.summarize()
