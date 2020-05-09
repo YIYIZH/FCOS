@@ -208,14 +208,15 @@ class FCOSLossComputation(object):
 
     def binary_loss_func(self, bi_class, t_label):
         device = bi_class.device
-        num = bi_class.shape[0]
         preds = bi_class.float()
-        if t_label == 'daytime':
-            t = torch.tensor([1.0, 0], device=device)
-            t = t.expand(num, 2)
-        else:
-            t = torch.tensor([0, 1.0], device=device)
-            t = t.expand(num, 2)
+        tl = []
+        for i, t in enumerate(t_label):
+            if t == 'daytime':
+                tl.append([1.0, 0])
+            else:
+                tl.append([0, 1.0])
+
+        t = torch.tensor(tl, device = device)
         loss = self.bi_loss_func(preds, t)
         return loss
 
@@ -296,8 +297,8 @@ class FCOSLossComputation(object):
             reg_loss = box_regression_flatten.sum()
             reduce_sum(centerness_flatten.new_tensor([0.0]))
             centerness_loss = centerness_flatten.sum()
-            bi_class = torch.flatten(bi_class, 1)
-            bi_loss = bi_class.flaten(1).sum()
+            #bi_class = torch.flatten(bi_class, 1)
+            #bi_loss = bi_class.flaten(1).sum()
 
         return cls_loss, reg_loss, centerness_loss, bi_loss
 

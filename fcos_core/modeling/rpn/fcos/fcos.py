@@ -213,41 +213,67 @@ class FCOSModule(torch.nn.Module):
             losses (dict[Tensor]): the losses for the model during training. During
                 testing, it is an empty dict.
         """
-        # box_cls, box_regression, centerness = self.head(features)
+        #bc, br, cent = self.head_day(features)
+        bi_class = self.head_class(features)
+        bc = []
+        br = []
+        cent = []
         # To do: decide which branch to go
         if time_label == None:
-            # TODO: predict day/night by binary_class branch
-            bi_class = self.head_class(features)
-            time_label[0] = self._forward_test_bi(bi_class)
-        # TODO : seperate each image's time_label from a batch if eval batch size is over 1
-        if time_label[0] == 'daytime':
-            print('train daytime branch')
-            box_cls, box_regression, centerness = self.head_day(features)
-            bi_class = self.head_class(features)
-        elif time_label[0] == 'night':
-            print('train night branch')
-            box_cls, box_regression, centerness = self.head_night(features)
-            bi_class = self.head_class(features)
+            # predict day/night by binary_class branch
+            t_label = self._forward_test_bi_batch(bi_class)
+            # TODO : seperate each image's time_label from a batch if eval batch size is over 1
+            for i, ti in enumerate(t_label):
+                if ti == 0:
+                    f = tuple([f[i].unsqueeze(0) for f in list(features)])
+                    box_cls, box_regression, centerness = self.head_day(f)
 
+                else:
+                    f = tuple([f[i].unsqueeze(0) for f in list(features)])
+                    box_cls, box_regression, centerness = self.head_night(f)
+                if bc == []:
+                    bc = box_cls
+                    br = box_regression
+                    cent = centerness
+                else:
+                    bc = [torch.cat((x, y), dim=0) for x, y in zip(bc, box_cls)]
+                    br = [torch.cat((x, y), dim=0) for x, y in zip(br, box_regression)]
+                    cent = [torch.cat((x, y), dim=0) for x, y in zip(cent, centerness)]
+        else:
+            for i, ti in enumerate(time_label):
+                if ti == 'daytime':
+                    f = tuple([f[i].unsqueeze(0) for f in list(features)])
+                    box_cls, box_regression, centerness = self.head_day(f)
+                else:
+                    f = tuple([f[i].unsqueeze(0) for f in list(features)])
+                    box_cls, box_regression, centerness = self.head_night(f)
+                if bc == []:
+                    bc = box_cls
+                    br = box_regression
+                    cent = centerness
+                else:
+                    bc = [torch.cat((x, y), dim=0) for x, y in zip(bc, box_cls)]
+                    br = [torch.cat((x, y), dim=0) for x, y in zip(br, box_regression)]
+                    cent = [torch.cat((x, y), dim=0) for x, y in zip(cent, centerness)]
         locations = self.compute_locations(features)
  
         if self.training:
             return self._forward_train(
-                locations, box_cls, 
-                box_regression, 
-                centerness, targets, bi_class, time_label[0]
+                locations, bc,
+                br,
+                cent, targets, bi_class, time_label
             )
         else:
-            print("This image is from" + time_label[0])
+            # print("This image is from" + str(t_label[0]))
+            # TODO: change to be able to test binary classification
             return self._forward_test(
-                locations, box_cls, box_regression, 
-                centerness, images.image_sizes
+                locations, bc, br,
+                cent, images.image_sizes
             )
 
     def _forward_train(self, locations, box_cls, box_regression, centerness, targets, bi_class, time_label):
         loss_box_cls, loss_box_reg, loss_centerness, loss_binary_cls = self.loss_evaluator(
             locations, box_cls, box_regression, centerness, targets, bi_class, time_label)
-        #loss_binary_cls = self.compute_loss(bi_class, t)
         losses = {
             "loss_cls": loss_box_cls,
             "loss_reg": loss_box_reg,
@@ -263,14 +289,9 @@ class FCOSModule(torch.nn.Module):
         )
         return boxes, {}
 
-    def _forward_test_bi(self, bi_class):
-        # TODO: get the class of time
-        # bi_class = F.softmax(bi_class, dim=1)
+    def _forward_test_bi_batch(self, bi_class):
         _, preds = torch.max(bi_class, 1)
-        if preds[0] == 0:
-            return 'daytime'
-        else:
-            return 'night'
+        return preds
 
     def compute_locations(self, features):
         locations = []
@@ -297,17 +318,6 @@ class FCOSModule(torch.nn.Module):
         shift_y = shift_y.reshape(-1)
         locations = torch.stack((shift_x, shift_y), dim=1) + stride // 2
         return locations
-
-    def compute_loss(self, bi_class, t):
-        # TODO: compute binary loss
-        _, preds = torch.max(bi_class, 1)
-        num = preds.shape[0]
-        if t == 'daytime':
-            out = torch.zeros([num])
-        else:
-            out = torch.ones([num])
-        loss = self.binary_loss_func(preds, out)
-        return loss
 
 
 def build_fcos(cfg, in_channels):
